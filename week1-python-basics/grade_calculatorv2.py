@@ -36,9 +36,9 @@ try:
   if finaltotal >= 90: 
     print("You finish the semester with an A! Great job!")
   elif finaltotal >= 80:
-    print("You finish the semester with an B! Good work!")
+    print("You finish the semester with a B! Good work!")
   elif finaltotal >= 70:
-    print("You finish the semester with an C. You made it!")
+    print("You finish the semester with a C. You made it!")
   elif finaltotal >= 60:
     print("You finish the semester with a D. You will have to retake the class!")
   else:
