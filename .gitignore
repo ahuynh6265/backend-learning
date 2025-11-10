@@ -1,0 +1,17 @@
+
+# Week 2 Generated Files
+week2-libraries-files/**/*.json
+week2-libraries-files/**/*.csv
+week2-libraries-files/**/*.txt
+!week2-libraries-files/**/README.md
+week2-libraries-files/**/data/*
+week2-libraries-files/**/notes/*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# OS
+.DS_Store
