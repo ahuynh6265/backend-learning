@@ -44,7 +44,7 @@ try:
           print(f"Error: {e}")
           print("Please try again")
         else: break
-      tempChange = c_to_f(fahrenheit)
+      tempChange = f_to_c(fahrenheit)
       print(f"The temperature {fahrenheit:.2f} in celcius is {tempChange:.2f}")
 
     else: 
