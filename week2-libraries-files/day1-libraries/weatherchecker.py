@@ -6,7 +6,9 @@ import sys
 def get_weather(city):
   try:
     url = (f"https://wttr.in/{city}?format=3")
+    #timeout prevents from loading forever
     response = requests.get(url, timeout=5)
+    #checks for errors 
     response.raise_for_status() 
     return response.text.strip() 
   except requests.RequestException as e:
