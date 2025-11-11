@@ -57,7 +57,7 @@ try:
       else: break
     taskList.append(chore)
 
-    if (len(taskList) - 1) > len(allNames):
+    if len(taskList) > len(allNames):
       print("Too many chores, not enough people!")
       break
 
