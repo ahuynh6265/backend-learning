@@ -1,4 +1,6 @@
 #to do list that saves to json file 
+#11/16/25
+#time spent: 75 min
 import json 
 '''
 add todo list 
