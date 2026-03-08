@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, inital-scale=1.0">
+  <title>Real Time Chat</title>
+</head>
+
+<body>
+
+<form>
+  <label for = "username"> Username: 
+  </label>
+  <input type = "text" id = "username" placeholder= "Username here"/> 
+</form>
+
+<form>
+  <label for = "message"> Message: 
+  </label>
+  <input type = "text" id = "message" placeholder= "Message here"/> 
+</form>
+
+<button id = "send">Send</button>
+<div id = "messages"></div>
+<button id = "connect">Connect</button>
+
+<script>
+  let websocket 
+
+  document.getElementById("connect").addEventListener("click", function(){
+    const username = document.getElementById("username").value 
+    websocket = new WebSocket("ws://localhost:8765")
+    websocket.onopen = function() {
+      websocket.send(username)
+    }
+    websocket.onmessage = function(event){
+      console.log(event.data)
+      const messages = document.getElementById("messages")
+      messages.innerHTML += `<p>${event.data}</p>` 
+    }
+
+    websocket.onclose = function() {
+      const messages = document.getElementById("messages")
+      messages.innerHTML += `<p>Disconnected</p>` 
+    }
+  })
+
+  document.getElementById("send").addEventListener("click", function(){
+    const messageInput = document.getElementById("message").value
+    const messageDiv = document.getElementById("messages")
+    const username = document.getElementById("username").value
+    messageDiv.innerHTML += `<p>You: ${messageInput}</p>`
+    websocket.send(`${username}: ${messageInput}`)
+    document.getElementById("messages").value = ""
+  })
+</script>
+
+</body>
+
+</html>
