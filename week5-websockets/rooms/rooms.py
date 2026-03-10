@@ -1,5 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
+import json 
 
 app = FastAPI()
 connected_clients = {}
@@ -46,12 +47,12 @@ html = '''
     const room = document.getElementById("room").value
     websocket = new WebSocket(`ws://localhost:8000/ws/${room}/${username}`)
     websocket.onopen = function() {
-      websocket.send(username)
     }
     websocket.onmessage = function(event){
       console.log(event.data)
       const messages = document.getElementById("messages")
-      messages.innerHTML += `<p>${event.data}</p>` 
+      const data = JSON.parse(event.data)
+      messages.innerHTML += `<p>${data.username}: ${data.message}</p>` 
     }
 
     websocket.onclose = function() {
@@ -63,9 +64,8 @@ html = '''
   document.getElementById("send").addEventListener("click", function(){
     const messageInput = document.getElementById("message").value
     const messageDiv = document.getElementById("messages")
-    const username = document.getElementById("username").value
     messageDiv.innerHTML += `<p>You: ${messageInput}</p>`
-    websocket.send(`${username}: ${messageInput}`)
+    websocket.send(`${messageInput}`)
     document.getElementById("messages").value = ""
   })
 </script>
@@ -82,11 +82,12 @@ class ConnectionManager:
     message_history.setdefault(room, [])
     connected_clients[room][websocket] = username
     if message_history[room]:
-      await websocket.send_text("<br>".join(message_history[room]))
+      for message in message_history[room]:
+        await websocket.send_text(message)
   
   async def disconnect(self, websocket:WebSocket, room): 
     del connected_clients[room][websocket]
-    await websocket.close() 
+     
 
   async def broadcast(self, websocket:WebSocket, room, message):
     for client in connected_clients[room].keys(): 
@@ -103,15 +104,19 @@ def get_chat(): return HTMLResponse(html)
 @app.websocket("/ws/{room}/{username}")
 async def websocket_endpoint(websocket: WebSocket, room: int, username: str):
   await manager.connect(websocket, room, username)
-  await manager.broadcast(websocket, room, f"{username} has joined chat room {room}")
+
+  data = {"username": username, "message": f"has joined chat room {room}"}
+  await manager.broadcast(websocket, room, json.dumps(data))
 
   try:
     while True:
-      message = await websocket.receive_text() 
-      await manager.broadcast(websocket, room, message)
-      message_history[room].append(message)
+      message = await websocket.receive_text()
+      data = {"username": username, "message": message} 
+      await manager.broadcast(websocket, room, json.dumps(data))
+      message_history[room].append(json.dumps(data))
   except WebSocketDisconnect:
     pass
   finally:
-    await manager.broadcast(websocket, room, f"{username} has disconnected from room {room}")
+    data = {"username": username, "message": f"has disconnected from chat room {room}"}
+    await manager.broadcast(websocket, room, json.dumps(data))
     await manager.disconnect(websocket, room)
