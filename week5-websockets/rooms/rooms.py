@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse
 
 app = FastAPI()
 connected_clients = {}
+message_history = {}
 
 html = '''
 <!DOCTYPE html>
@@ -78,7 +79,10 @@ class ConnectionManager:
   async def connect(self, websocket:WebSocket, room, username):
     await websocket.accept()
     connected_clients.setdefault(room, {})
+    message_history.setdefault(room, [])
     connected_clients[room][websocket] = username
+    if message_history[room]:
+      await websocket.send_text("<br>".join(message_history[room]))
   
   async def disconnect(self, websocket:WebSocket, room): 
     del connected_clients[room][websocket]
@@ -88,6 +92,8 @@ class ConnectionManager:
     for client in connected_clients[room].keys(): 
       if client != websocket:
         await client.send_text(message)
+
+    
 
 manager = ConnectionManager()
 
@@ -103,6 +109,7 @@ async def websocket_endpoint(websocket: WebSocket, room: int, username: str):
     while True:
       message = await websocket.receive_text() 
       await manager.broadcast(websocket, room, message)
+      message_history[room].append(message)
   except WebSocketDisconnect:
     pass
   finally:
